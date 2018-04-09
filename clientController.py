@@ -28,10 +28,11 @@ import signal
 import sys
 #tshark -r speedtest25percentloss.pcap -Y "ip&&(udp||tcp)" -T fields -e frame.time_epoch -e ip.src -e ip.dst -e tcp.srcport -e tcp.dstport -e udp.srcport -e udp.dstport -e ip.len -E separator=,
 
-server_address=sys.argv[1]#"52.47.106.69"#"localhost"#"138.96.203.5"
-interface="eth0"
-chromeExtension="bdbejdogckpdpdajccdgcljmnihcbmkg"
-args=""
+server_address=sys.argv[1]#"fit07"#"localhost"#"138.96.203.5"
+SERVER_PORT=443#8000
+interface="control"#"eth0"
+chromeExtension="fifmhpcpkaingagnbnmnlmolpimjkdmi"#"bdbejdogckpdpdajccdgcljmnihcbmkg"
+args="no-sandbox"
 def get_ip_address():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.connect(("8.8.8.8", 80))
@@ -73,13 +74,13 @@ def resetNetworkQoS():
 timeString=time.strftime("%Y%m%d%H%M%S", time.gmtime())
 
 def sendDataToMainController(data):
-    conn = httplib.HTTPConnection(server_address,8000)
+    conn = httplib.HTTPConnection(server_address,SERVER_PORT)
     params=data+"\r\n"
     headers = {"Content-type": "application/x-www-form-urlencoded","Accept": "text/plain"}
     conn.request("POST","/",params,headers)
 
     response = conn.getresponse()
-    print "sendDataToMainController",response
+    #print "sendDataToMainController",response
 
 #sendDataToMainController("heloo")
 #exit()
@@ -87,7 +88,7 @@ STOPFLAG=0
 def getPointAndVideo():
     global state,videoID,resolution,videoDuration,pcapProcess,point,dur,bitrate,resolution,STOPFLAG
     print "getPointAndConfigureQoSBefore"
-    conn = httplib.HTTPConnection(server_address,8000)#138.96.203.5
+    conn = httplib.HTTPConnection(server_address,SERVER_PORT)#138.96.203.5
     conn.request("GET","/getPoint")
     #print "conn",conn
     r1 = conn.getresponse()
@@ -297,11 +298,11 @@ class myHandler(BaseHTTPRequestHandler):
             #resp=self.rfile.read()
             self.send_response(200)
             self.send_header("Access-Control-Allow-Origin","*")
-            print "queryDict",queryDict
+            #print "queryDict",queryDict
             #print "queryDict",queryDict
 
             #print "dataQ",dataQ
-
+	    pcapProcess.kill()
 
             resetNetworkQoS()
             if queryDict['ts_start_js'][0]!="-1":
@@ -336,13 +337,14 @@ class myHandler(BaseHTTPRequestHandler):
                 #print "cdns",cdns
                 #pcapProcess.terminate()
                 #pcapProcess.wait()
-                os.kill(pcapProcess.pid, signal.SIGINT)
+                #os.kill(pcapProcess.pid, signal.SIGINT)
                 pcapSize=0
                 pcapSize=int(os.stat("YouTube.pcap").st_size)
                 t1=time.time()
                 pcapStats,chunkInfoPcap,cdnIPs=getPcapFeature("YouTube.pcap",clientIP,cdns)#"138.96.203.5"
                 #cdnIPs=np.unique(np.array(cdnTuples)[:,2])
-                print "pcapStatsTIme",time.time()-t1
+                pcapStatsTime=time.time()-t1
+		print "pcapStatsTime",pcapStatsTime
                 import shutil
                 #shutil.copy("YouTube.pcap","YouTube_"+videoKeyword+"_"+videoID+"_"+resolution+str(time.time())+".pcap")
 
@@ -359,13 +361,14 @@ class myHandler(BaseHTTPRequestHandler):
                         "&pcapStats="+",".join(str(round(e,2)) for e in pcapStats)+\
                         "&chunkInfoPcap="+str(chunkInfoPcap)+\
                         "&clientID="+clientID+\
-                        "&cdnIPs="+cdnIPs+\
+                        "&cdnIPs="+str(cdnIPs)+\
                         "&cdns="+str(cdns)+\
                         "&bitrate="+str(bitrate)+\
                         "&dur="+str(dur)+\
                         "&clen_audio="+str(clen_audio)+\
                         "&clen_video="+str(clen_video)+\
-                        "&httpInfo="+chunkInfo[0]
+                        "&httpInfo="+chunkInfo[0]+\
+			"&pcapStatsTime="+str(pcapStatsTime)
 
 
                 #print "content",content
@@ -390,7 +393,7 @@ try:
     ts_start_python=int(time.time()*1000)
     resetNetworkQoS()
 
-    call(["/opt/google/chrome/chrome","chrome-extension://"+chromeExtension+"/headers.html",args])#?videoID="+videoID+"&resolution="+resolutions[r]])#+resolutions[0]
+    #call(["/opt/google/chrome/chrome","chrome-extension://"+chromeExtension+"/headers.html",args])#?videoID="+videoID+"&resolution="+resolutions[r]])#+resolutions[0]
     server.serve_forever()
 
 
