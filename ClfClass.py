@@ -814,3 +814,5 @@ class ClfClass:
                 cfWeightedSum.append(np.sum(confVol[confVol[:,0]==i][:,1]))
 
         return np.nan_to_num(np.array(cfWeightedSum)/np.array(volRow)),volRow
+
+  
