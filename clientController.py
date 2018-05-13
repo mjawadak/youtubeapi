@@ -74,7 +74,7 @@ def resetNetworkQoS():
 timeString=time.strftime("%Y%m%d%H%M%S", time.gmtime())
 
 def sendDataToMainController(data):
-    conn = httplib.HTTPConnection(server_address,8000)
+    conn = httplib.HTTPConnection(server_address,SERVER_PORT)
     params=data+"\r\n"
     headers = {"Content-type": "application/x-www-form-urlencoded","Accept": "text/plain"}
     conn.request("POST","/",params,headers)
@@ -88,7 +88,7 @@ STOPFLAG=0
 def getPointAndVideo():
     global state,videoID,resolution,videoDuration,pcapProcess,point,dur,bitrate,resolution,STOPFLAG
     print "getPointAndConfigureQoSBefore"
-    conn = httplib.HTTPConnection(server_address,8000)#138.96.203.5
+    conn = httplib.HTTPConnection(server_address,SERVER_PORT)#138.96.203.5
     conn.request("GET","/getPoint")
     #print "conn",conn
     r1 = conn.getresponse()
