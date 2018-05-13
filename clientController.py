@@ -30,8 +30,8 @@ import sys
 
 server_address=sys.argv[1]#"fit07"#"localhost"#"138.96.203.5"
 SERVER_PORT=443#8000
-interface="control"#"eth0"
-chromeExtension="fifmhpcpkaingagnbnmnlmolpimjkdmi"#"bdbejdogckpdpdajccdgcljmnihcbmkg"
+interface="eth0"
+chromeExtension="ndoppbjkgpenhhocidoanikdgpllkbdo"#"fifmhpcpkaingagnbnmnlmolpimjkdmi"#"bdbejdogckpdpdajccdgcljmnihcbmkg"
 args="no-sandbox"
 def get_ip_address():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -74,13 +74,13 @@ def resetNetworkQoS():
 timeString=time.strftime("%Y%m%d%H%M%S", time.gmtime())
 
 def sendDataToMainController(data):
-    conn = httplib.HTTPConnection(server_address,SERVER_PORT)
+    conn = httplib.HTTPConnection(server_address,8000)
     params=data+"\r\n"
     headers = {"Content-type": "application/x-www-form-urlencoded","Accept": "text/plain"}
     conn.request("POST","/",params,headers)
 
     response = conn.getresponse()
-    #print "sendDataToMainController",response
+    print "sendDataToMainController",response
 
 #sendDataToMainController("heloo")
 #exit()
@@ -88,7 +88,7 @@ STOPFLAG=0
 def getPointAndVideo():
     global state,videoID,resolution,videoDuration,pcapProcess,point,dur,bitrate,resolution,STOPFLAG
     print "getPointAndConfigureQoSBefore"
-    conn = httplib.HTTPConnection(server_address,SERVER_PORT)#138.96.203.5
+    conn = httplib.HTTPConnection(server_address,8000)#138.96.203.5
     conn.request("GET","/getPoint")
     #print "conn",conn
     r1 = conn.getresponse()
@@ -156,7 +156,7 @@ def chunkAnalysis(chunk):
             else:
                 if (ss[STATUSCODE] == "200"):
                     index=requestids.index(ss[REQUESTID])
-                    chunkDLdur=int(ss[TIMESTAMP])-int(timestamps[index])
+                    chunkDLdur=float(ss[TIMESTAMP])-float(timestamps[index])
                     reqid=requestids[index]
                     completedReqs.append([reqid,chunkDLdur])
                     if ss[9]=="video":
@@ -216,6 +216,7 @@ def chunkAnalysis(chunk):
 httpInfo='1509466428668,r4---sn-gxo5uxg-jqbe.googlevideo.com,0,video/webm,247,0-497221,0,349824,REQ|1509466428673,r4---sn-gxo5uxg-jqbe.googlevideo.com,1,audio/webm,251,0-65922,0,349825,REQ|1509466428693,r4---sn-gxo5uxg-jqbe.googlevideo.com,0,video/webm,247,0-497221,0,349828,REQ|1509466428697,r4---sn-gxo5uxg-jqbe.googlevideo.com,1,audio/webm,251,0-65922,0,349829,REQ|1509466430934,r4---sn-gxo5uxg-jqbe.googlevideo.com,1,audio/webm,251,0-65922,0,349829,200|1509466432544,r4---sn-gxo5uxg-jqbe.googlevideo.com,2,video/webm,247,497222-994004,0,349840,REQ|1509466432553,r4---sn-gxo5uxg-jqbe.googlevideo.com,2,video/webm,247,497222-994004,0,349841,REQ|1509466433933,r4---sn-gxo5uxg-jqbe.googlevideo.com,0,video/webm,247,0-497221,0,349828,200|1509466435018,r4---sn-gxo5uxg-jqbe.googlevideo.com,3,audio/webm,251,65923-131458,3909,349843,REQ|1509466435035,r4---sn-gxo5uxg-jqbe.googlevideo.com,3,audio/webm,251,65923-131458,3909,349844,REQ|1509466435052,r4---sn-gxo5uxg-jqbe.googlevideo.com,2,video/webm,247,497222-994004,0,349841,200|1509466435514,r4---sn-gxo5uxg-jqbe.googlevideo.com,4,audio/webm,251,131459-196994,7818,349846,REQ|1509466435717,r4---sn-gxo5uxg-jqbe.googlevideo.com,4,audio/webm,251,131459-196994,7818,349847,REQ|1509466435959,r4---sn-gxo5uxg-jqbe.googlevideo.com,3,audio/webm,251,65923-131458,3909,349844,200|1509466436530,r4---sn-gxo5uxg-jqbe.googlevideo.com,4,audio/webm,251,131459-196994,7818,349847,200|1509466436537,r4---sn-gxo5uxg-jqbe.googlevideo.com,5,video/webm,247,994005-1293780,8253,349849,REQ|1509466436544,r4---sn-gxo5uxg-jqbe.googlevideo.com,5,video/webm,247,994005-1293780,8253,349850,REQ|1509466438111,r4---sn-gxo5uxg-jqbe.googlevideo.com,5,video/webm,247,994005-1293780,8253,349850,200|1509466438147,r4---sn-gxo5uxg-jqbe.googlevideo.com,6,video/webm,247,1293781-1917021,10677,349852,REQ|1509466438166,r4---sn-gxo5uxg-jqbe.googlevideo.com,6,video/webm,247,1293781-1917021,10677,349853,REQ|1509466440840,r4---sn-gxo5uxg-jqbe.googlevideo.com,6,video/webm,247,1293781-1917021,10677,349853,200|1509466440878,r4---sn-gxo5uxg-jqbe.googlevideo.com,7,audio/webm,251,196995-262530,11744,349854,REQ|1509466441009,r4---sn-gxo5uxg-jqbe.googlevideo.com,7,audio/webm,251,196995-262530,11744,349855,REQ|1509466441492,r4---sn-gxo5uxg-jqbe.googlevideo.com,8,video/webm,247,1917022-3309815,14081,349856,REQ|1509466441543,r4---sn-gxo5uxg-jqbe.googlevideo.com,8,video/webm,247,1917022-3309815,14081,349857,REQ|1509466442005,r4---sn-gxo5uxg-jqbe.googlevideo.com,7,audio/webm,251,196995-262530,11744,349855,200|1509466444467,r4---sn-gxo5uxg-jqbe.googlevideo.com,9,audio/webm,251,262531-334054,15528,349864,REQ|1509466444507,r4---sn-gxo5uxg-jqbe.googlevideo.com,9,audio/webm,251,262531-334054,15528,349865,REQ|1509466444733,r4---sn-gxo5uxg-jqbe.googlevideo.com,8,video/webm,247,1917022-3309815,14081,349857,200|'
 #print "chunkAnalysis",chunkAnalysis(httpInfo)[0]
 #exit()
+
 
 PORT_NUMBER = 8001
 
@@ -298,13 +299,14 @@ class myHandler(BaseHTTPRequestHandler):
             #resp=self.rfile.read()
             self.send_response(200)
             self.send_header("Access-Control-Allow-Origin","*")
-            #print "queryDict",queryDict
+            print "queryDict",queryDict
             #print "queryDict",queryDict
 
             #print "dataQ",dataQ
-	    pcapProcess.kill()
+
 
             resetNetworkQoS()
+
             if queryDict['ts_start_js'][0]!="-1":
 
                 print "sending data"
@@ -335,6 +337,7 @@ class myHandler(BaseHTTPRequestHandler):
                 chunkInfo=chunkAnalysis(data["httpInfo"])
                 cdns=chunkInfo[1]
                 #print "cdns",cdns
+
                 #pcapProcess.terminate()
                 #pcapProcess.wait()
                 #os.kill(pcapProcess.pid, signal.SIGINT)
@@ -343,13 +346,13 @@ class myHandler(BaseHTTPRequestHandler):
                 t1=time.time()
                 pcapStats,chunkInfoPcap,cdnIPs=getPcapFeature("YouTube.pcap",clientIP,cdns)#"138.96.203.5"
                 #cdnIPs=np.unique(np.array(cdnTuples)[:,2])
-                pcapStatsTime=time.time()-t1
-		print "pcapStatsTime",pcapStatsTime
+                print "pcapStatsTIme",time.time()-t1
                 import shutil
                 #shutil.copy("YouTube.pcap","YouTube_"+videoKeyword+"_"+videoID+"_"+resolution+str(time.time())+".pcap")
 
                 #print "pcapStats",pcapStats,type(pcapStats)
 
+                print "----------->>>>>>>",type(",".join(str(round(e,4)) for e in pcapStats)),type(chunkInfo[0]),type(cdnIPs)
                 content=content+"&point="+",".join(str(e) for e in point)\
                         +"&keyword="+videoKeyword+\
                         "&v="+str(v)+\
@@ -358,7 +361,7 @@ class myHandler(BaseHTTPRequestHandler):
                         "&videoDuration="+videoDuration+\
                         "&resolution="+resolution+\
                         "&pcapSize="+str(pcapSize)+\
-                        "&pcapStats="+",".join(str(round(e,2)) for e in pcapStats)+\
+                        "&pcapStats="+",".join(str(round(e,4)) for e in pcapStats)+\
                         "&chunkInfoPcap="+str(chunkInfoPcap)+\
                         "&clientID="+clientID+\
                         "&cdnIPs="+str(cdnIPs)+\
@@ -367,8 +370,7 @@ class myHandler(BaseHTTPRequestHandler):
                         "&dur="+str(dur)+\
                         "&clen_audio="+str(clen_audio)+\
                         "&clen_video="+str(clen_video)+\
-                        "&httpInfo="+chunkInfo[0]+\
-			"&pcapStatsTime="+str(pcapStatsTime)
+                        "&httpInfo="+chunkInfo[0]
 
 
                 #print "content",content
@@ -393,7 +395,7 @@ try:
     ts_start_python=int(time.time()*1000)
     resetNetworkQoS()
 
-    #call(["/opt/google/chrome/chrome","chrome-extension://"+chromeExtension+"/headers.html",args])#?videoID="+videoID+"&resolution="+resolutions[r]])#+resolutions[0]
+    call(["/opt/google/chrome/chrome","chrome-extension://"+chromeExtension+"/headers.html",args])#?videoID="+videoID+"&resolution="+resolutions[r]])#+resolutions[0]
     server.serve_forever()
 
 
