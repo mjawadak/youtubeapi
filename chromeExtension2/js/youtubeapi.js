@@ -76,30 +76,39 @@ function getITUQoE(stallingInfo,ts_startPlaying,videoDur,numStalls){
 function addListeners() {
     //chrome.webRequest.onBeforeRequest.addListener(handleEvent, filters, ['requestBody']);
     chrome.webRequest.onSendHeaders.addListener(handleEvent, filters, ['requestHeaders']);
-    chrome.webRequest.onBeforeRedirect.addListener(handleEvent, filters, ['responseHeaders']);
+    //chrome.webRequest.onBeforeRedirect.addListener(handleEvent, filters, ['responseHeaders']);
     chrome.webRequest.onCompleted.addListener(handleEvent, filters, ['responseHeaders']);
-    chrome.webRequest.onErrorOccurred.addListener(handleEvent, filters);
+    //chrome.webRequest.onErrorOccurred.addListener(handleEvent, filters);
 }
 
 function removeListeners() {
     //chrome.webRequest.onBeforeRequest.removeListener(handleEvent);
     chrome.webRequest.onSendHeaders.removeListener(handleEvent);
-    chrome.webRequest.onBeforeRedirect.removeListener(handleEvent);
+    //chrome.webRequest.onBeforeRedirect.removeListener(handleEvent);
     chrome.webRequest.onCompleted.removeListener(handleEvent);
-    chrome.webRequest.onErrorOccurred.removeListener(handleEvent);
+    //chrome.webRequest.onErrorOccurred.removeListener(handleEvent);
 }
+var dur=0;
+var chunkDur=0;
+var lastFrac=0;
+var chunkSizeBuffer=0;
+var totalSizeChunks=0;
+var ts_chunk_itu=0;
+var chunkInfoITU="";
+var httpReqs=[];
 function handleEvent(details) {
     url=details.url;
     if (details.responseHeaders) {
         //document.getElementById("demo").innerHTML+=url.split("?")[0]+"<br>";
     }
+
     if (url.search("videoplayback?")!=-1){
         mime=getParameterByName("mime",url);
         range=getParameterByName("range",url);
         itag=getParameterByName("itag",url);
         rn=getParameterByName("rn",url);
         rbuf=getParameterByName("rbuf",url);
-
+        chunkSize=Number(range.split("-")[1])-Number(range.split("-")[0])
         requestId=details.requestId;
         isVideo=mime.search("video");
         if (isVideo!=-1){
@@ -110,17 +119,53 @@ function handleEvent(details) {
             clen_audio=getParameterByName("clen",url);
         }
         cdn=url.split("/")[2];
-        statusCode="REQ";
+        if (details.requestHeaders){
+            statusCode="REQ";
+            chunk=details.timeStamp+","+cdn+","+rn+","+mime+","+itag+","+range+","+rbuf+","+requestId+","+statusCode+"|";
+            httpInfo=httpInfo+chunk;
+            document.getElementById("demo").innerHTML+=chunk+"<br>";
+        }
+
         if (details.responseHeaders && details.statusCode==200) {
             statusCode=details.statusCode;
+            chunk=details.timeStamp+","+cdn+","+rn+","+mime+","+itag+","+range+","+rbuf+","+requestId+","+statusCode+"|";
+            httpInfo=httpInfo+chunk;
+            document.getElementById("demo").innerHTML+=chunk+"<br>";
+
+            if (details.error){
+                statusCode=details.error;
+            }
+
+            chunkSizeBuffer=chunkSizeBuffer+chunkSize;
+            totalSizeChunks=totalSizeChunks+chunkSize;
+
+            if (isVideo!=-1){
+                if (player.getVideoLoadedFraction()*dur!=lastFrac){
+                    if ((player.getVideoLoadedFraction()*dur-lastFrac)>1 && chunkSize>10000){
+                        chunkDur=player.getVideoLoadedFraction()*dur-lastFrac;
+                        //document.getElementById("demo").innerHTML+=details.timeStamp+", "+cdn+","+rn+","+mime+","+itag+","+range+","+rbuf+","+requestId+","+statusCode+","+chunkSize+","+chunkSizeBuffer+","+totalSizeChunks+","+(player.getVideoLoadedFraction()*dur).toFixed(2)+", "+chunkDur.toFixed(2)+", "+lastFrac.toFixed(2)+"<br>";
+
+                        chunkITU=itag+","+(ts_chunk_itu).toFixed(2)+","+chunkDur.toFixed(2)+","+chunkSizeBuffer;//+","+(player.getVideoLoadedFraction()*dur).toFixed(2)+", "+chunkDur.toFixed(2)+", "+lastFrac.toFixed(2);
+                        //document.getElementById("demo").innerHTML+=chunkITU+"<br>"
+                        chunkInfoITU=chunkInfoITU+chunkITU+"|";
+                        lastFrac=player.getVideoLoadedFraction()*dur;
+                        ts_chunk_itu=ts_chunk_itu+chunkDur;
+                        chunkSizeBuffer=0;
+                    }
+                }
+            }
+
         }
-        if (details.error){
-            statusCode=details.error;
+
+        if (details.requestHeaders || details.responseHeaders){
+            //if (!details.statusCode|| details.statusCode==200)
+                //document.getElementById("demo").innerHTML+=details.timeStamp+", "+cdn+","+rn+","+mime+","+itag+","+range+","+rbuf+","+requestId+","+statusCode+", "+chunkSize+"--"+stallNumberReal+", "+(player.getVideoLoadedFraction()*dur).toFixed(2)+", "+chunkDur.toFixed(2)+", "+lastFrac.toFixed(2)+"<br>";
+                //document.getElementById("demo").innerHTML+=details.timeStamp+", "+cdn+","+rn+","+mime+","+itag+","+range+","+rbuf+","+requestId+","+statusCode+","+chunkSize+","+chunkSizeBuffer+","+(player.getVideoLoadedFraction()*dur).toFixed(2)+", "+chunkDur.toFixed(2)+", "+lastFrac.toFixed(2)+"<br>";
         }
-        chunk=new Date().getTime()+","+cdn+","+rn+","+mime+","+itag+","+range+","+rbuf+","+requestId+","+statusCode+"|";
-        httpInfo=httpInfo+chunk;
-        document.getElementById("demo").innerHTML+=chunk+"<br>";
+
+
     }
+
 }
 addListeners();
 function timeoutFunc(){
@@ -135,7 +180,7 @@ function timeoutFunc(){
     //window.close();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-            document.getElementById("demo").innerHTML = this.responseText;
+            //document.getElementById("demo").innerHTML = this.responseText;
             //removeListeners();
             //window.close();
             location.reload();
@@ -177,7 +222,7 @@ var ts_onPlayerReadyEvent=0;
 var ts_firstBuffering=0;
 var ts_startPlaying=0;
 var ts_start_js = new Date().getTime();
-setTimeout(checkBuffer, 1000);
+setTimeout(checkBuffer, 300);
 
 //var videoID =getParameterByName("videoID");
 //var resolution =getParameterByName("resolution");
@@ -207,6 +252,18 @@ function configureQoSClient(){
 
     }
 }
+function initPlayer(videoID){
+    player = new YT.Player('player', {
+                    height: '2160',//'1080',//'390',
+                    width: '3840',//'1920',//'640',1920×1080
+                    videoId: videoID,
+                    events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange,
+                    'onPlaybackQualityChange':onPlaybackQualityChange
+                    }
+                });
+}
 function getVideo(){
     var xhttp = new XMLHttpRequest();
 
@@ -218,21 +275,12 @@ function getVideo(){
             videoID=xhttp.getResponseHeader("videoID");
             resolution=xhttp.getResponseHeader("resolution");
             videoDuration=1000*Number(xhttp.getResponseHeader("videoDuration"));
-            document.getElementById("demo").innerHTML = xhttp.getResponseHeader("videoID");
+            //document.getElementById("demo").innerHTML = xhttp.getResponseHeader("videoID");
             //document.getElementById("demo").innerHTML = "GET !!";
             //removeListeners();
             //window.close();
             if (videoID!="WAIT"){
-                player = new YT.Player('player', {
-                    height: '780',//'390',
-                    width: '1280',//'640',
-                    videoId: videoID,
-                    events: {
-                    'onReady': onPlayerReady,
-                    'onStateChange': onPlayerStateChange,
-                    'onPlaybackQualityChange':onPlaybackQualityChange
-                    }
-                });
+                initPlayer(videoID);
             }
             else{
                 setTimeout(getVideo,1000);
@@ -245,6 +293,7 @@ function getVideo(){
 
 function onYouTubeIframeAPIReady() {
     getVideo();
+    //initPlayer("d9HqVXGRJL0")
     //stallInfo="1500669315024,1134|1500669328554,2976|1500669336104,2934|1500669343231,7558|1500669355048,5521|1500669367337,2947|1500669374078,178|";
     //ts_startPlaying = "1500669293288";
     //videoDur=61000;
@@ -260,7 +309,7 @@ function onYouTubeIframeAPIReady() {
 //    'onStateChange': onPlayerStateChange
 //    }
 //});
-ts_onYTIframeAPIReady=new Date().getTime()
+ts_onYTIframeAPIReady=new Date().getTime();
 
 }
 
@@ -270,7 +319,7 @@ function onPlayerReady(event) {
     player_load_time=parseFloat(ts_onPlayerReadyEvent)-parseFloat(ts_start_js);
     document.getElementById("demo").innerHTML +="player_load_time="+player_load_time+"<br>"; //player.getAvailableQualityLevels()
     
-    event.target.setPlaybackQuality(resolution);
+    event.target.setPlaybackQuality(resolution);//resolution);//hd2160
     configureQoSClient();
     //event.target.playVideo();
 }
@@ -294,7 +343,7 @@ function onPlayerStateChange(event) {
 
 var date = new Date().getTime();
 
-document.getElementById("demo").innerHTML+=join_time+","+date+",event.data = "+event.data+"<br>";
+//document.getElementById("demo").innerHTML+=join_time+","+date+",event.data = "+event.data+"<br>";
 if (event.data == YT.PlayerState.PLAYING) {
 	document.getElementById("demo").innerHTML+="Playing "+player.getAvailableQualityLevels()+" "+player.getVideoLoadedFraction()+"<br>";
     //setTimeout(stopVideo, 6000);
@@ -313,13 +362,14 @@ if (event.data == YT.PlayerState.PLAYING) {
     //window.location.href="/home/workspaceEclipseJS/YouTubeAPI/youtubePlayerMain.html?test=1";
     //window.location.reload();
     
-    //setTimeout(checkBuffer, 1000);
+    //setTimeout(checkBuffer, 300);
     
     done = true;
     if (stallingNumber>0){
     	lastStallDur=parseFloat(new Date().getTime())-timeOfLastStall;
     	totalStallDuration=totalStallDuration+lastStallDur;
     	stallingInfo=stallingInfo+timeOfLastStall+","+lastStallDur+"|";
+    	//document.getElementById("demo").innerHTML+="Stalling "+stallingInfo;
     }
 }
 if (event.data == YT.PlayerState.BUFFERING) {
@@ -351,8 +401,11 @@ if (event.data == -1){
 
 
 }
-var realtimeStallDur=0
+var flag=0;
+var stallNumberReal=0;
+var stallingInfoReal="";
 function checkBuffer(){
+
     //document.getElementById("demo").innerHTML+="ts_start_js="+ts_start_js+"&ts_onYTIframeAPIReady="+ts_onYTIframeAPIReady+"&ts_onPlayerReadyEvent="+ts_onPlayerReadyEvent+"&ts_firstBuffering="+ts_firstBuffering+"&ts_startPlaying="+ts_startPlaying+"&player_load_time="+player_load_time+"&join_time="+join_time+"&totalStallDuration="+totalStallDuration+"&stallingNumber="+stallingNumber+"&stallingInfo="+stallingInfo+"<br>";
     var ts=new Date().getTime();
     if (player_load_time==0) {
@@ -361,7 +414,7 @@ function checkBuffer(){
             sendVideoInfo("playerLoadTimeHigh");
         }
         else{
-            setTimeout(checkBuffer, 1000);
+            setTimeout(checkBuffer, 300);
         }
 
     }
@@ -373,33 +426,55 @@ function checkBuffer(){
                 sendVideoInfo("joinTimeHigh");
             }
             else{
-                setTimeout(checkBuffer, 1000);
+                setTimeout(checkBuffer, 300);
             }
         }
         else{
-            setTimeout(checkBuffer, 1000);
+            setTimeout(checkBuffer, 300);
         }
     }
     else if (ts_firstBuffering>0){
         //document.getElementById("demo").innerHTML+="getVideoLoadedFraction="+player.getVideoLoadedFraction()+"<br>"
         //QoE=getITUQoE(stallingInfo,ts_startPlaying,videoDuration,stallingNumber);
         //QoE==1
-        if (player.getPlayerState()==3){
-            realtimeStallDur=realtimeStallDur+1;
-        }
-        if (stallingNumber>0){
-            QoE=0;
-        }
+
+
         if (player.getVideoLoadedFraction()>0.98){//realtimeStallDur>5 ||  && player.getPlayerState()!=YT.PlayerState.ENDED)){
             sendVideoInfo("videoDownloaded");
         }
         else {
-            setTimeout(checkBuffer, 1000);
+            setTimeout(checkBuffer, 300);
         }
     }
     else {
-        setTimeout(checkBuffer, 1000);
+        setTimeout(checkBuffer, 300);
     }
+
+    //document.getElementById("demo").innerHTML+="playbackTime/loadedTIme "+(player.getCurrentTime()).toFixed(2)+" , "+(player.getVideoLoadedFraction()*dur).toFixed(2)+"<br>";
+    if (done==true){
+        if (player.getCurrentTime()>=player.getVideoLoadedFraction()*dur){
+            if (flag==0){
+                stallNumberReal+=1;
+                ts_last_stall_start = new Date().getTime();
+            }
+            flag=1;
+        }
+        else{
+            if (flag==1){
+                stallDurReal=parseFloat(new Date().getTime()) - parseFloat(ts_last_stall_start);
+                stallingInfoReal=stallingInfoReal+ts_last_stall_start+","+stallDurReal+"|";
+                document.getElementById("demo").innerHTML+=stallNumberReal+" stallingInfoReal "+stallingInfoReal+"<br>";
+            }
+            flag=0;
+
+        }
+    }
+
+
+
+
+    //document.getElementById("demo").innerHTML=(player.getCurrentTime()).toFixed(2)+","+(player.getVideoLoadedFraction()*dur).toFixed(2)+","+dur+","+stallingNumber+","+stallNumberReal+"<br>";
+
 
 }
 function stopVideo() {
@@ -432,13 +507,13 @@ function sendVideoInfo(status){
         var params="ts_start_js=-1";
     }
     else if (status=="videoEnded" || status=="videoDownloaded"){
-        var params="ts_start_js="+ts_start_js+"&ts_onYTIframeAPIReady="+ts_onYTIframeAPIReady+"&ts_onPlayerReadyEvent="+ts_onPlayerReadyEvent+"&ts_firstBuffering="+ts_firstBuffering+"&ts_startPlaying="+ts_startPlaying+"&player_load_time="+player_load_time+"&join_time="+join_time+"&httpInfo="+httpInfo+"&availableQualityLevels="+availableQualityLevels+"&totalStallDuration="+totalStallDuration+"&stallingNumber="+stallingNumber+"&stallingInfo="+stallingInfo+"&timeout=no"+"&getVideoLoadedFraction="+player.getVideoLoadedFraction()+"&resolution="+resolution+"&bufferSizeWhenStart="+bufferSizeWhenStart+"&clen_video="+clen_video+"&clen_audio="+clen_audio+"&dur="+dur+"&QoE="+QoE+"&qualityInfo="+qualityInfo;
+        var params="ts_start_js="+ts_start_js+"&ts_onYTIframeAPIReady="+ts_onYTIframeAPIReady+"&ts_onPlayerReadyEvent="+ts_onPlayerReadyEvent+"&ts_firstBuffering="+ts_firstBuffering+"&ts_startPlaying="+ts_startPlaying+"&player_load_time="+player_load_time+"&join_time="+join_time+"&httpInfo="+httpInfo+"&availableQualityLevels="+availableQualityLevels+"&totalStallDuration="+totalStallDuration+"&stallingNumber="+stallingNumber+"&stallingInfo="+stallingInfo+"&timeout=no"+"&getVideoLoadedFraction="+player.getVideoLoadedFraction()+"&resolution="+resolution+"&bufferSizeWhenStart="+bufferSizeWhenStart+"&clen_video="+clen_video+"&clen_audio="+clen_audio+"&dur="+dur+"&QoE="+QoE+"&qualityInfo="+qualityInfo+"&stallNumberReal="+stallNumberReal+"&stallingInfoReal="+stallingInfoReal+"&chunkInfoITU="+chunkInfoITU;
     }
     else if (status=="playerLoadTimeHigh"){
-        var params="ts_start_js="+ts_start_js+"&ts_onYTIframeAPIReady="+ts_onYTIframeAPIReady+"&ts_onPlayerReadyEvent="+ts_onPlayerReadyEvent+"&ts_firstBuffering="+ts_firstBuffering+"&ts_startPlaying="+ts_startPlaying+"&player_load_time="+"310000"+"&join_time="+join_time+"&httpInfo="+httpInfo+"&availableQualityLevels="+availableQualityLevels+"&totalStallDuration="+totalStallDuration+"&stallingNumber="+stallingNumber+"&stallingInfo="+stallingInfo+"&timeout=no"+"&getVideoLoadedFraction="+"0"+"&resolution="+resolution+"&bufferSizeWhenStart="+bufferSizeWhenStart+"&clen_video="+clen_video+"&clen_audio="+clen_audio+"&dur="+dur+"&QoE=0"+"&qualityInfo="+qualityInfo;
+        var params="ts_start_js="+ts_start_js+"&ts_onYTIframeAPIReady="+ts_onYTIframeAPIReady+"&ts_onPlayerReadyEvent="+ts_onPlayerReadyEvent+"&ts_firstBuffering="+ts_firstBuffering+"&ts_startPlaying="+ts_startPlaying+"&player_load_time="+"310000"+"&join_time="+join_time+"&httpInfo="+httpInfo+"&availableQualityLevels="+availableQualityLevels+"&totalStallDuration="+totalStallDuration+"&stallingNumber="+stallingNumber+"&stallingInfo="+stallingInfo+"&timeout=no"+"&getVideoLoadedFraction="+"0"+"&resolution="+resolution+"&bufferSizeWhenStart="+bufferSizeWhenStart+"&clen_video="+clen_video+"&clen_audio="+clen_audio+"&dur="+dur+"&QoE=0"+"&qualityInfo="+qualityInfo+"&stallNumberReal="+stallNumberReal+"&stallingInfoReal="+stallingInfoReal+"&chunkInfoITU="+chunkInfoITU;
     }
     else if (status=="joinTimeHigh"){
-        var params="ts_start_js="+ts_start_js+"&ts_onYTIframeAPIReady="+ts_onYTIframeAPIReady+"&ts_onPlayerReadyEvent="+ts_onPlayerReadyEvent+"&ts_firstBuffering="+ts_firstBuffering+"&ts_startPlaying="+ts_startPlaying+"&player_load_time="+player_load_time+"&join_time="+"310000"+"&httpInfo="+httpInfo+"&availableQualityLevels="+availableQualityLevels+"&totalStallDuration="+totalStallDuration+"&stallingNumber="+stallingNumber+"&stallingInfo="+stallingInfo+"&timeout=no"+"&getVideoLoadedFraction="+"0"+"&resolution="+resolution+"&bufferSizeWhenStart="+bufferSizeWhenStart+"&clen_video="+clen_video+"&clen_audio="+clen_audio+"&dur="+dur+"&QoE=0"+"&qualityInfo="+qualityInfo;
+        var params="ts_start_js="+ts_start_js+"&ts_onYTIframeAPIReady="+ts_onYTIframeAPIReady+"&ts_onPlayerReadyEvent="+ts_onPlayerReadyEvent+"&ts_firstBuffering="+ts_firstBuffering+"&ts_startPlaying="+ts_startPlaying+"&player_load_time="+player_load_time+"&join_time="+"310000"+"&httpInfo="+httpInfo+"&availableQualityLevels="+availableQualityLevels+"&totalStallDuration="+totalStallDuration+"&stallingNumber="+stallingNumber+"&stallingInfo="+stallingInfo+"&timeout=no"+"&getVideoLoadedFraction="+"0"+"&resolution="+resolution+"&bufferSizeWhenStart="+bufferSizeWhenStart+"&clen_video="+clen_video+"&clen_audio="+clen_audio+"&dur="+dur+"&QoE=0"+"&qualityInfo="+qualityInfo+"&stallNumberReal="+stallNumberReal+"&stallingInfoReal="+stallingInfoReal+"&chunkInfoITU="+chunkInfoITU;
     }
 
     xhttp.open("POST","http://localhost:8001",true)
