@@ -410,13 +410,13 @@ def getTPInterTimePacketSize(maxTuples,packets,machineIP):
             ul=ul+int(p[IP_LEN])
             #print "---------------------------------------------",srcIP,prevUL
             if len(prevUL)!=0:
-                ULinterTimes.append(float(p[TS_START])-float(prevUL[TS_START]))
+                ULinterTimes.append(1000*float(p[TS_START])-1000*float(prevUL[TS_START]))
             prevUL=p
         elif p[IP_DST]==srcIP:#if p[IP_DST]==maxTuples[0][IP_SRC] and p[IP_SRC]==maxTuples[0][IP_DST] :#DOWNLINK
             #print "DOWNLINK",p[IP_LEN]
             DLPacketSizes.append(int(p[IP_LEN]))
             if len(prevDL)!=0:
-                DLinterTimes.append(float(p[TS_START])-float(prevDL[TS_START]))
+                DLinterTimes.append(1000*float(p[TS_START])-1000*float(prevDL[TS_START]))
             prevDL=p
             dl=dl+int(p[IP_LEN])
             if t_start==0:
@@ -560,5 +560,4 @@ if __name__=="__main__":
 
 
     #print pcapStats2,chunkInfoPcap2,cdnIPs2
-
 
