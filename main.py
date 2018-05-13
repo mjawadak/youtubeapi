@@ -38,7 +38,7 @@ def getBufInfo(stallingInfo,ts_startPlaying,videoDur):
         stallDur=0
         ts=-1
         DIFF=[]
-        print "stallArray",stallArray
+        #print "stallArray",stallArray
         for s in stallArray:
             if s!="":
                 st=s.split(",")
@@ -113,7 +113,7 @@ if SAMPLING_TYPE==0:
 mongoDBclient = MongoClient('localhost', 27017)
 db = mongoDBclient.youtubeapi
 #datasetMongo =db["datasetAL_Par_QoE_ITU11_DT_minSampLeaf_"+str(minSamplesLeaf)]
-datasetMongo =db["datasetYouTubePassive"]
+datasetMongo =db["datasetYouTubePassive2"]
 iteration=0
 
 if SAMPLING_TYPE==1:
