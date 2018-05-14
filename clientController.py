@@ -304,7 +304,7 @@ class myHandler(BaseHTTPRequestHandler):
 
             #print "dataQ",dataQ
 
-
+	    pcapProcess.kill()
             resetNetworkQoS()
 
             if queryDict['ts_start_js'][0]!="-1":
