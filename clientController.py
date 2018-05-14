@@ -105,7 +105,7 @@ def getPointAndVideo():
         configNetworkQoS()
         #print state
         #"YouTube_"+videoKeyword+"_"+videoID+"_"+resolution+".pcap"
-        pcapProcess=subprocess.Popen(["tcpdump","-U","port","443","-s","0","-w","YouTube.pcap"])
+        pcapProcess=subprocess.Popen(["tcpdump","-i",interface,"-U","port","443","-s","0","-w","YouTube.pcap"])
 
         state="READY"
 
