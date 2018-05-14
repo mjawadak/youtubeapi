@@ -389,7 +389,7 @@ if (event.data == YT.PlayerState.BUFFERING) {
 }
 if (event.data == YT.PlayerState.ENDED) {
     
-    sendVideoInfo("videoEnded");
+    //sendVideoInfo("videoEnded");
 
 }
 if (event.data == -1){
