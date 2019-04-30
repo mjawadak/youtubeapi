@@ -14,9 +14,9 @@ The clients are implemented using clientController.py
 
 The stats from the pcap traces are obtained using readPcap.py
 
-The ClfClass.py contains the code for the trace based sampling method using the cell_distributionALL.csv file.
+The ClfClass.py contains the code for the trace based sampling method based on the cell_distributionALL.csv file.
 
-Root access is required on the linux machines.
+Root access is required on the linux machines since tcpdump is used to capture the network traffic.
 
 The client is run with a google chrome extension. The extension ID needs to be modified in the clientController.py file.
 
