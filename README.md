@@ -8,6 +8,11 @@ QoE -> The Quality of Experience for the given playout. The labels are based on 
 
 The dataset can be downloaded from https://drive.google.com/open?id=1MTmvOuKBE85XFyYQJBrABd2K-OOcwwVi
 
+Dependencies:
+pymongo,sklearn,dpkt,dnspython
+
+For ITU MOS, we used the code provided in https://github.com/itu-p1203/itu-p1203
+
 The mainController is implemented using main.py. 
 
 The clients are implemented using clientController.py
