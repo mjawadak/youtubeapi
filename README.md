@@ -2,14 +2,12 @@
 
 
 
-The dataset can be downloaded from https://drive.google.com/open?id=1MTmvOuKBE85XFyYQJBrABd2K-OOcwwVi
+The structured dataset for ML modeling can be downloaded from https://drive.google.com/open?id=1MTmvOuKBE85XFyYQJBrABd2K-OOcwwVi
 
 Dependencies:
 pymongo,sklearn,dpkt,dnspython
 
-For ITU MOS, we used the code provided in https://github.com/itu-p1203/itu-p1203
-
-The mainController is implemented using main.py. 
+The mainController is implemented using main.py. It stores the results in MongoDB.
 
 The clients are implemented using clientController.py
 
@@ -22,3 +20,9 @@ Root access is required on the linux machines since tcpdump is used to capture t
 The client is run with a google chrome extension. The extension ID needs to be modified in the clientController.py file.
 
 The public IP and port of the mainController needs to be set in clientController.py
+
+# For offline calculation of ITU MOS
+
+For ITU MOS, we used the code provided in https://github.com/itu-p1203/itu-p1203. 
+
+Use ituTest.py file to obtain the ITU MOS values from the mongoDB database collected using main.py offline.
