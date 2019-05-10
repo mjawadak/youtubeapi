@@ -3,10 +3,9 @@
 ## The QoS-QoE dataset
 The final structured dataset for ML modeling can be downloaded from https://drive.google.com/open?id=1MTmvOuKBE85XFyYQJBrABd2K-OOcwwVi
 
-## Dependencies:
-pymongo,sklearn,dpkt,dnspython
-
 ## For the code
+Dependencies: pymongo,sklearn,dpkt,dnspython
+
 Download the video catalog required by main.py from https://drive.google.com/open?id=1kcrLUk5t_8Rg0EqxN0erxOT-2QM3LhZ9
 
 The mainController is implemented using main.py. It stores the results in MongoDB.
