@@ -1,11 +1,12 @@
 # From Network Traffic Measurements to QoE for Internet Video, IFIP 2019.
 
+## The QoS-QoE dataset
+The final structured dataset for ML modeling can be downloaded from https://drive.google.com/open?id=1MTmvOuKBE85XFyYQJBrABd2K-OOcwwVi
 
-
-The structured dataset for ML modeling can be downloaded from https://drive.google.com/open?id=1MTmvOuKBE85XFyYQJBrABd2K-OOcwwVi
+## For the code
 Download the video catalog required by main.py from https://drive.google.com/open?id=1kcrLUk5t_8Rg0EqxN0erxOT-2QM3LhZ9
 
-Dependencies:
+### Dependencies:
 pymongo,sklearn,dpkt,dnspython
 
 The mainController is implemented using main.py. It stores the results in MongoDB.
@@ -22,7 +23,7 @@ The client is run with a google chrome extension. The extension ID needs to be m
 
 The public IP and port of the mainController needs to be set in clientController.py
 
-# For offline calculation of ITU MOS
+## For offline calculation of ITU MOS
 
 For ITU MOS, we used the code provided in https://github.com/itu-p1203/itu-p1203. 
 
