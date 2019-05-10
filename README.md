@@ -3,6 +3,7 @@
 
 
 The structured dataset for ML modeling can be downloaded from https://drive.google.com/open?id=1MTmvOuKBE85XFyYQJBrABd2K-OOcwwVi
+Download the video catalog required by main.py from https://drive.google.com/open?id=1kcrLUk5t_8Rg0EqxN0erxOT-2QM3LhZ9
 
 Dependencies:
 pymongo,sklearn,dpkt,dnspython
