@@ -4,7 +4,7 @@
 
 The video catalog can be downloaded from https://drive.google.com/open?id=1tu0sBInt8xJ9Zn32IDlh6DW_ju2FhEou
 
-This catalog consists of a mongoDB json file that includes the metadata (video ID, resolution, bitrate, category) for around 1 million videos.
+This catalog consists of a mongoDB json file that includes the metadata (video ID, resolution, codec, bitrate, category) for around 1 million videos.
 
 ## The QoS-QoE dataset
 The final structured dataset for ML modeling can be downloaded from https://drive.google.com/open?id=1MTmvOuKBE85XFyYQJBrABd2K-OOcwwVi
